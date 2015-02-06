@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Enums\SqLiteDisplayType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Record.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\FileUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\SqLiteUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\TestTable.cs" />

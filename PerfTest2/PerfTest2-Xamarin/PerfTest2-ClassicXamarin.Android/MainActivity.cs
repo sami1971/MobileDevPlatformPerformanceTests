@@ -10,6 +10,12 @@ using PerfTest2Xamarin.Utilities;
 
 namespace PerfTest2Xamarin
 {
+    using System.Diagnostics;
+    using System.IO;
+    using SQLite.Net;
+    using SQLite.Net.Platform.XamarinAndroid;
+    using Environment = Android.OS.Environment;
+
     [Activity(Label = "PerfTest2_ClassicXamarin.Android", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : Activity, Android.Widget.AdapterView.IOnItemClickListener
     {
@@ -113,15 +119,50 @@ namespace PerfTest2Xamarin
 
             utilities = new SqLiteUtilitiesAlt(this);
 
+            TimeSpan original, alternative;
+
             try
             {
+                
                 utilities.OpenConnection();
 
+                var stopWatch = Stopwatch.StartNew();
                 for (int i = 0; i <= maxValue; i++)
                 {
                     utilities.AddRecord("test", "person", i, "12345678901234567890123456789012345678901234567890");
                 }
+                stopWatch.Stop();
+
+                original = stopWatch.Elapsed;
+
                 utilities.CloseConnection();
+
+                var newConnection = new SQLiteConnectionWithLock(new SQLitePlatformAndroid(),
+                    new SQLiteConnectionString(Path.Combine(Environment.ExternalStorageDirectory.AbsolutePath, "async.db"), true));
+
+                newConnection.DropTable<Record>();
+                newConnection.CreateTable<Record>();
+
+                stopWatch.Restart();
+
+                newConnection.BeginTransaction();
+
+                for (int i = 0; i <= maxValue; i++)
+                {
+                    newConnection.Insert(new Record()
+                    {
+                        FirstName = "test",
+                        LastName = "person",
+                        Index = i,
+                        Misc = "12345678901234567890123456789012345678901234567890"
+                    });
+                }
+
+                newConnection.Commit();
+
+                stopWatch.Stop();
+                alternative = stopWatch.Elapsed;
+
             }
             catch (Exception ex)
             {
@@ -135,7 +176,7 @@ namespace PerfTest2Xamarin
             }
 
             AlertDialog.Builder dlgAlert = new AlertDialog.Builder(this);
-            dlgAlert.SetMessage("All records written to database");
+            dlgAlert.SetMessage(string.Format("All records written to database. Original time: {0}, alternative time: {1}", original, alternative));
             dlgAlert.SetTitle("Success");
             dlgAlert.SetPositiveButton("OK", (sender, args) => { });
             dlgAlert.SetCancelable(true);

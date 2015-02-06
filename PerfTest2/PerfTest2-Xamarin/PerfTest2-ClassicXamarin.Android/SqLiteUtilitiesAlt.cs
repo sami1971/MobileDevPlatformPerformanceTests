@@ -64,10 +64,10 @@ namespace PerfTest2Xamarin.Utilities
 
         public  void AddRecord(string firstName, string lastName, int index, string misc) 
         {
-            if (dbConn == null) 
-            {
-                OpenConnection();
-            }
+            //if (dbConn == null) 
+            //{
+            //    OpenConnection();
+            //}
 
             ContentValues values = new ContentValues();
             values.Put("firstName", firstName);
